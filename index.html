@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operator Interface | Central Command</title>
+    <style>
+        /* --- CORE MATRIX THEME --- */
+        :root {
+            --bg-color: #000000;
+            --main-green: #00ff41;
+            --dim-green: #003300;
+            --bright-green: #00ff8f;
+            --font-stack: 'Courier New', Courier, monospace;
+            --glow: 0 0 10px rgba(0, 255, 65, 0.7);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Rain handles scrolling */
+            background-color: var(--bg-color);
+            color: var(--main-green);
+            font-family: var(--font-stack);
+            font-size: 16px;
+            text-shadow: var(--glow);
+        }
+
+        /* --- BACKGROUND DIGITAL RAIN --- */
+        #matrix_rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind content */
+            opacity: 0.8;
+        }
+
+        /* --- MAIN TERMINAL INTERFACE --- */
+        #terminal_window {
+            position: relative;
+            z-index: 1;
+            width: 80%;
+            max-width: 900px;
+            height: 80vh;
+            margin: 5vh auto;
+            background-color: rgba(0, 10, 0, 0.85); /* Slightly transparent */
+            border: 2px solid var(--main-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+
+        /* Terminal Header */
+        #terminal_header {
+            background-color: var(--dim-green);
+            padding: 5px 10px;
+            border-bottom: 2px solid var(--main-green);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        /* Terminal Body */
+        #terminal_body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto; /* Allow scrolling inside terminal */
+            scrollbar-width: thin;
+            scrollbar-color: var(--dim-green) var(--bg-color);
+        }
+
+        /* Custom Scrollbar for Terminal */
+        #terminal_body::-webkit-scrollbar { width: 8px; }
+        #terminal_body::-webkit-scrollbar-track { background: var(--bg-color); }
+        #terminal_body::-webkit-scrollbar-thumb { background: var(--dim-green); border-radius: 4px;}
+
+        /* --- CONTENT TYPOGRAPHY --- */
+        h1, h2, h3 { color: var(--bright-green); margin-top: 0; }
+        h1 { font-size: 1.8rem; text-transform: uppercase;}
+        h2 { font-size: 1.2rem; border-bottom: 1px solid var(--dim-green); padding-bottom: 5px; margin-top: 20px;}
+
+        p { line-height: 1.6; margin-bottom: 15px; }
+
+        .glitch { animation: glitch 2s infinite; }
+
+        @keyframes glitch {
+            0% { text-shadow: 0.5px 0 0 #fff, -0.5px 0 0 #fff; }
+            2% { text-shadow: 2px 0 0 #fff, -2px 0 0 #fff; }
+            4% { text-shadow: 0.5px 0 0 #fff, -0.5px 0 0 #fff; }
+            100% { text-shadow: 0.5px 0 0 var(--bright-green), -0.5px 0 0 var(--bright-green); }
+        }
+
+        /* --- POLYMARKET STYLE ANIMATIONS --- */
+        .prediction-market {
+            background: rgba(0, 30, 0, 0.5);
+            border: 1px solid var(--dim-green);
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .market-ticker {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+
+        .market-title { color: #fff; font-weight: bold; }
+        
+        /* Simulated animated outcome percentages */
+        .outcome-yes { color: var(--bright-green); font-weight: bold; animation: pulsePercent 3s infinite; }
+        .outcome-no { color: #ff4444; font-weight: bold; animation: pulsePercent 3s infinite reverse; }
+
+        @keyframes pulsePercent {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* --- THE CV LINK BUTTON --- */
+        #cv_link_container {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .matrix-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: transparent;
+            border: 2px solid var(--main-green);
+            color: var(--main-green);
+            font-family: var(--font-stack);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: var(--glow);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .matrix-button:hover {
+            background-color: var(--main-green);
+            color: var(--bg-color);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 1);
+            text-shadow: none;
+        }
+
+        /* Typing cursor animation */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2rem;
+            background-color: var(--main-green);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. Background Digital Rain -->
+    <canvas id="matrix_rain"></canvas>
+
+    <!-- 2. Main Terminal Interface -->
+    <div id="terminal_window">
+        <div id="terminal_header">
+            <span>Status: Connected</span>
+            <span>Location: Sentinel Node 7</span>
+            <span>User: Oper_Identity_Pending</span>
+        </div>
+
+        <div id="terminal_body">
+            <h1 class="glitch">Awaiting Input...<span class="cursor"></span></h1>
+
+            <p>Welcome, Operator. You have breached the secure layer. This interface serves as the primary access point for the identity known as [YOUR NAME].</p>
+
+            <h2>System_Objectives (About Me)</h2>
+            <p>A highly motivated neural-network engineer specializing in decrypting legacy codebases and constructing scalable, decentralized protocols. Currently seeking new parameters for deployment in challenging environments.</p>
+
+            <h2>Live_Prediction_Feeds (System Anomalies)</h2>
+            <div class="prediction-market">
+                <div class="market-ticker">
+                    <span class="market-title">Market: Will [Your Name] join a new team this quarter?</span>
+                </div>
+                <div class="market-ticker">
+                    <span>YES: <span class="outcome-yes" id="market_yes">65%</span></span>
+                    <span>NO: <span class="outcome-no" id="market_no">35%</span></span>
+                </div>
+                <div class="market-ticker" style="font-size: 0.7rem; color: #888;">
+                    Vol: 1,200.5 MATIC | Chance of Deployment: High
+                </div>
+            </div>
+
+            <h2>Access_Credentials</h2>
+            <p>To verify the authenticity of this neural profile and review deployment history, access the personal dataset (CV) below.</p>
+
+            <!-- 3. THE CV LINK BUTTON -->
+            <div id="cv_link_container">
+                <!-- !!! CHANGE THIS URL TO YOUR ACTUAL CV LINK !!! -->
+                <a href="https://your-website.com/your-cv.pdf" target="_blank" class="matrix-button">
+                    > Download_CV.exe <
+                </a>
+                <p style="font-size: 0.7rem; margin-top: 10px; color: var(--dim-green);">Warning: Accessing this file may reveal significant competence.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 4. Matrix Rain JavaScript -->
+    <script>
+        const canvas = document.getElementById('matrix_rain');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas to full screen
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+
+        // Characters used in rain (mix of katakana, latin, numbers)
+        const characters = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const charArray = characters.split('');
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize; // number of columns for the rain
+
+        // An array of drops - one per column
+        const drops = [];
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1; // All start at top
+        }
+
+        // Drawing the characters
+        function drawRain() {
+            // Black BG for the canvas - slightly transparent to create trail effect
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#0F0"; // Green text
+            ctx.font = fontSize + "px Courier New";
+
+            // Looping over drops
+            for (let i = 0; i < drops.length; i++) {
+                // Pick a random character
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                
+                // Draw the character
+                // ctx.fillText(text, x_position, y_position);
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Sending the drop back to the top randomly after it has crossed the screen
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                // Incrementing Y coordinate
+                drops[i]++;
+            }
+        }
+
+        // Run animation frame
+        setInterval(drawRain, 33); // approx 30fps
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            // drops array would need recalculation for true robustness on resize
+        });
+    </script>
+</body>
+</html>
