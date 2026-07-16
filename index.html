@@ -3,284 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator Interface | Central Command</title>
-    <style>
-        /* --- CORE MATRIX THEME --- */
-        :root {
-            --bg-color: #000000;
-            --main-green: #00ff41;
-            --dim-green: #003300;
-            --bright-green: #00ff8f;
-            --font-stack: 'Courier New', Courier, monospace;
-            --glow: 0 0 10px rgba(0, 255, 65, 0.7);
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* Rain handles scrolling */
-            background-color: var(--bg-color);
-            color: var(--main-green);
-            font-family: var(--font-stack);
-            font-size: 16px;
-            text-shadow: var(--glow);
-        }
-
-        /* --- BACKGROUND DIGITAL RAIN --- */
-        #matrix_rain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1; /* Behind content */
-            opacity: 0.8;
-        }
-
-        /* --- MAIN TERMINAL INTERFACE --- */
-        #terminal_window {
-            position: relative;
-            z-index: 1;
-            width: 80%;
-            max-width: 900px;
-            height: 80vh;
-            margin: 5vh auto;
-            background-color: rgba(0, 10, 0, 0.85); /* Slightly transparent */
-            border: 2px solid var(--main-green);
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border-radius: 5px;
-        }
-
-        /* Terminal Header */
-        #terminal_header {
-            background-color: var(--dim-green);
-            padding: 5px 10px;
-            border-bottom: 2px solid var(--main-green);
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        /* Terminal Body */
-        #terminal_body {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto; /* Allow scrolling inside terminal */
-            scrollbar-width: thin;
-            scrollbar-color: var(--dim-green) var(--bg-color);
-        }
-
-        /* Custom Scrollbar for Terminal */
-        #terminal_body::-webkit-scrollbar { width: 8px; }
-        #terminal_body::-webkit-scrollbar-track { background: var(--bg-color); }
-        #terminal_body::-webkit-scrollbar-thumb { background: var(--dim-green); border-radius: 4px;}
-
-        /* --- CONTENT TYPOGRAPHY --- */
-        h1, h2, h3 { color: var(--bright-green); margin-top: 0; }
-        h1 { font-size: 1.8rem; text-transform: uppercase;}
-        h2 { font-size: 1.2rem; border-bottom: 1px solid var(--dim-green); padding-bottom: 5px; margin-top: 20px;}
-
-        p { line-height: 1.6; margin-bottom: 15px; }
-
-        .glitch { animation: glitch 2s infinite; }
-
-        @keyframes glitch {
-            0% { text-shadow: 0.5px 0 0 #fff, -0.5px 0 0 #fff; }
-            2% { text-shadow: 2px 0 0 #fff, -2px 0 0 #fff; }
-            4% { text-shadow: 0.5px 0 0 #fff, -0.5px 0 0 #fff; }
-            100% { text-shadow: 0.5px 0 0 var(--bright-green), -0.5px 0 0 var(--bright-green); }
-        }
-
-        /* --- POLYMARKET STYLE ANIMATIONS --- */
-        .prediction-market {
-            background: rgba(0, 30, 0, 0.5);
-            border: 1px solid var(--dim-green);
-            padding: 10px;
-            margin: 15px 0;
-            border-radius: 4px;
-        }
-
-        .market-ticker {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-            padding: 3px 0;
-        }
-
-        .market-title { color: #fff; font-weight: bold; }
-        
-        /* Simulated animated outcome percentages */
-        .outcome-yes { color: var(--bright-green); font-weight: bold; animation: pulsePercent 3s infinite; }
-        .outcome-no { color: #ff4444; font-weight: bold; animation: pulsePercent 3s infinite reverse; }
-
-        @keyframes pulsePercent {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        /* --- THE CV LINK BUTTON --- */
-        #cv_link_container {
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        .matrix-button {
-            display: inline-block;
-            padding: 15px 30px;
-            background-color: transparent;
-            border: 2px solid var(--main-green);
-            color: var(--main-green);
-            font-family: var(--font-stack);
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            text-decoration: none;
-            cursor: pointer;
-            box-shadow: var(--glow);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .matrix-button:hover {
-            background-color: var(--main-green);
-            color: var(--bg-color);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 1);
-            text-shadow: none;
-        }
-
-        /* Typing cursor animation */
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 1.2rem;
-            background-color: var(--main-green);
-            animation: blink 1s infinite;
-            vertical-align: middle;
-            margin-left: 5px;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-    </style>
-</head>
-<body>
-
-    <!-- 1. Background Digital Rain -->
-    <canvas id="matrix_rain"></canvas>
-
-    <!-- 2. Main Terminal Interface -->
-    <div id="terminal_window">
-        <div id="terminal_header">
-            <span>Status: Connected</span>
-            <span>Location: Sentinel Node 7</span>
-            <span>User: Oper_Identity_Pending</span>
-        </div>
-
-        <div id="terminal_body">
-            <h1 class="glitch">Awaiting Input...<span class="cursor"></span></h1>
-
-            <p>Welcome, Operator. You have breached the secure layer. This interface serves as the primary access point for the identity known as [YOUR NAME].</p>
-
-            <h2>System_Objectives (About Me)</h2>
-            <p>A highly motivated neural-network engineer specializing in decrypting legacy codebases and constructing scalable, decentralized protocols. Currently seeking new parameters for deployment in challenging environments.</p>
-
-            <h2>Live_Prediction_Feeds (System Anomalies)</h2>
-            <div class="prediction-market">
-                <div class="market-ticker">
-                    <span class="market-title">Market: Will [Your Name] join a new team this quarter?</span>
-                </div>
-                <div class="market-ticker">
-                    <span>YES: <span class="outcome-yes" id="market_yes">65%</span></span>
-                    <span>NO: <span class="outcome-no" id="market_no">35%</span></span>
-                </div>
-                <div class="market-ticker" style="font-size: 0.7rem; color: #888;">
-                    Vol: 1,200.5 MATIC | Chance of Deployment: High
-                </div>
-            </div>
-
-            <h2>Access_Credentials</h2>
-            <p>To verify the authenticity of this neural profile and review deployment history, access the personal dataset (CV) below.</p>
-
-            <!-- 3. THE CV LINK BUTTON -->
-            <div id="cv_link_container">
-                <!-- !!! CHANGE THIS URL TO YOUR ACTUAL CV LINK !!! -->
-                <a href="https://your-website.com/your-cv.pdf" target="_blank" class="matrix-button">
-                    > Download_CV.exe <
-                </a>
-                <p style="font-size: 0.7rem; margin-top: 10px; color: var(--dim-green);">Warning: Accessing this file may reveal significant competence.</p>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- 4. Matrix Rain JavaScript -->
+    <title>Siphelele Dlamini | MPhil FinTech Candidate</title>
+    
+    <!-- Google Fonts for a formal yet modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        const canvas = document.getElementById('matrix_rain');
-        const ctx = canvas.getContext('2d');
-
-        // Set canvas to full screen
-        canvas.height = window.innerHeight;
-        canvas.width = window.innerWidth;
-
-        // Characters used in rain (mix of katakana, latin, numbers)
-        const characters = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const charArray = characters.split('');
-
-        const fontSize = 16;
-        const columns = canvas.width / fontSize; // number of columns for the rain
-
-        // An array of drops - one per column
-        const drops = [];
-        for (let x = 0; x < columns; x++) {
-            drops[x] = 1; // All start at top
-        }
-
-        // Drawing the characters
-        function drawRain() {
-            // Black BG for the canvas - slightly transparent to create trail effect
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = "#0F0"; // Green text
-            ctx.font = fontSize + "px Courier New";
-
-            // Looping over drops
-            for (let i = 0; i < drops.length; i++) {
-                // Pick a random character
-                const text = charArray[Math.floor(Math.random() * charArray.length)];
-                
-                // Draw the character
-                // ctx.fillText(text, x_position, y_position);
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                // Sending the drop back to the top randomly after it has crossed the screen
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nguni: {
+                            bg: '#F5F3EFE6',       /* Warm Ivory/Bone */
+                            card: '#FCFAF8',     /* Off-white */
+                            text: '#2D2A26',     /* Deep Charcoal */
+                            accent: '#8B5A44',   /* Terracotta / Clay */
+                            olive: '#626854',    /* Muted Earthy Green */
+                            border: '#E2DCD0'    /* Sand */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
                 }
-
-                // Incrementing Y coordinate
-                drops[i]++;
             }
         }
-
-        // Run animation frame
-        setInterval(drawRain, 33); // approx 30fps
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            canvas.height = window.innerHeight;
-            canvas.width = window.innerWidth;
-            // drops array would need recalculation for true robustness on resize
-        });
     </script>
+    <style>
+        body {
+            background-color: #F5F3EF;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='%238B5A44' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+            color: #2D2A26;
+        }
+
+        /* Subtle Geometric Nguni Divider */
+        .nguni-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 2rem 0;
+        }
+        .nguni-divider::before, .nguni-divider::after {
+            content: '';
+            height: 1px;
+            background-color: #E2DCD0;
+            flex-grow: 1;
+        }
+        .diamond {
+            width: 10px;
+            height: 10px;
+            background-color: #8B5A44;
+            transform: rotate(45deg);
+        }
+        .diamond.small {
+            width: 6px;
+            height: 6px;
+            background-color: #626854;
+            opacity: 0.7;
+        }
+
+        /* Delay utilities for staggered animations */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        
+        /* Ensures elements start hidden before animation */
+        .animate-fade-in-up { opacity: 0; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col justify-center items-center p-6 selection:bg-nguni-accent selection:text-white">
+
+    <main class="w-full max-w-3xl bg-nguni-card shadow-2xl rounded-sm border border-nguni-border p-8 md:p-14 relative overflow-hidden animate-fade-in-up">
+        
+        <!-- Decorative corner accents (Nguni shield geometry inspiration) -->
+        <div class="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-nguni-accent opacity-20 transform -translate-x-2 -translate-y-2"></div>
+        <div class="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-nguni-accent opacity-20 transform translate-x-2 translate-y-2"></div>
+
+        <!-- Header -->
+        <header class="text-center mb-8 animate-fade-in-up delay-100">
+            <h1 class="font-serif text-4xl md:text-5xl text-nguni-text mb-2 tracking-wide">Siphelele Dlamini</h1>
+            <p class="text-lg text-nguni-accent font-medium tracking-widest uppercase text-sm mb-4">Prospective MPhil FinTech Candidate</p>
+            <div class="flex justify-center gap-4 text-sm text-nguni-olive">
+                <span>📍 Pretoria, SA</span>
+                <span>•</span>
+                <span>✉️ dlamini.bob@tuks.co.za</span>
+            </div>
+        </header>
+
+        <div class="nguni-divider animate-fade-in-up delay-100">
+            <div class="diamond small"></div>
+            <div class="diamond"></div>
+            <div class="diamond small"></div>
+        </div>
+
+        <!-- Profile Summary -->
+        <section class="mb-10 text-center animate-fade-in-up delay-200">
+            <p class="text-base leading-relaxed text-gray-700">
+                I am a highschool-taught programmer turned Machine Learning enthusiast with professional experience building scalable web applications. My focus lies at the intersection of technology and operational efficiency, specifically aiming to resolve vulnerabilities within emerging financial networks.
+            </p>
+        </section>
+
+        <!-- Key Highlights Grid -->
+        <section class="grid md:grid-cols-2 gap-8 mb-10 animate-fade-in-up delay-300">
+            
+            <!-- Academic & Research Focus -->
+            <div class="bg-white p-6 border border-nguni-border shadow-sm relative group hover:border-nguni-accent transition-colors duration-300">
+                <div class="absolute -top-3 left-4 bg-nguni-card px-2 font-serif text-nguni-accent italic text-lg">Current Research</div>
+                <h3 class="font-semibold text-nguni-text mt-2 mb-2 leading-tight">Financial Fraud Detection in Mobile Money Networks</h3>
+                <p class="text-sm text-gray-600 mb-3">
+                    Evaluating cost-sensitive learning (CSL) on highly imbalanced datasets to improve fraud detection without falsely freezing legitimate accounts[cite: 1].
+                </p>
+                <div class="text-xs font-semibold text-nguni-olive uppercase tracking-wider">
+                    University of Pretoria • BSc Hons CS[cite: 1]
+                </div>
+            </div>
+
+            <!-- Engineering & FinTech -->
+            <div class="bg-white p-6 border border-nguni-border shadow-sm relative group hover:border-nguni-accent transition-colors duration-300">
+                <div class="absolute -top-3 left-4 bg-nguni-card px-2 font-serif text-nguni-accent italic text-lg">Engineering</div>
+                <h3 class="font-semibold text-nguni-text mt-2 mb-2 leading-tight">AI & Backend Systems[cite: 1]</h3>
+                <ul class="text-sm text-gray-600 space-y-1 mb-3 list-disc list-inside">
+                    <li>Freelance AI-Assisted Developer embedded in SDLC[cite: 1].</li>
+                    <li>Designed "FinGround", a simulated banking API using Clean Architecture & OAuth2[cite: 1].</li>
+                    <li>Developed LLM features to mitigate hallucination at Intalos AI[cite: 1].</li>
+                </ul>
+            </div>
+
+        </section>
+
+        <!-- Brief Skills -->
+        <section class="mb-12 text-center animate-fade-in-up delay-300">
+            <h2 class="text-sm font-bold text-nguni-text uppercase tracking-widest mb-4">Core Competencies[cite: 1]</h2>
+            <div class="flex flex-wrap justify-center gap-2">
+                <span class="px-3 py-1 bg-nguni-border bg-opacity-30 text-nguni-text text-xs rounded-sm border border-nguni-border">Machine Learning (PyTorch)[cite: 1]</span>
+                <span class="px-3 py-1 bg-nguni-border bg-opacity-30 text-nguni-text text-xs rounded-sm border border-nguni-border">Python & C#[cite: 1]</span>
+                <span class="px-3 py-1 bg-nguni-border bg-opacity-30 text-nguni-text text-xs rounded-sm border border-nguni-border">ASP.NET10 API[cite: 1]</span>
+                <span class="px-3 py-1 bg-nguni-border bg-opacity-30 text-nguni-text text-xs rounded-sm border border-nguni-border">Cloud & DevOps[cite: 1]</span>
+                <span class="px-3 py-1 bg-nguni-border bg-opacity-30 text-nguni-text text-xs rounded-sm border border-nguni-border">AI Security (GRC)[cite: 1]</span>
+            </div>
+        </section>
+
+        <!-- Call to Action (Full CV Link) -->
+        <div class="text-center animate-fade-in-up delay-300">
+            <!-- IMPORTANT: Change './Siphelele_Dlamini_CV.pdf' to the actual name of your PDF file -->
+            <a href="./Siphelele_Dlamini_CV.pdf" target="_blank" class="inline-flex items-center gap-2 px-8 py-3 bg-nguni-text text-white font-medium text-sm tracking-wide hover:bg-nguni-accent transition-all duration-300 rounded-sm shadow-md hover:shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-nguni-accent">
+                <span>View Full Curriculum Vitae</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer Note -->
+    <footer class="mt-8 text-center text-xs text-nguni-olive opacity-80 animate-fade-in-up delay-300">
+        <p>Built for the University of Cape Town MPhil in FinTech Admissions Committee.</p>
+    </footer>
+
 </body>
 </html>
